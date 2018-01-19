@@ -21,11 +21,15 @@ import sys
 import json
 from checksum import checksum
 from int_to_bitstr import int_to_bitstr
+import privatekey_to_info
+import mnemonic_to_privatekey
 
 words = json.loads(open("english.json").read())
 words_rev = json.loads(open("english_reverse.json").read())
 
 def main(words23):
+    assert (len(words23) == 23), "Need exactly 23 words"
+
     bitstr253 = ""
     for word in words23:
         print(words[word], word)
@@ -42,7 +46,11 @@ def main(words23):
         tmp256 = bitstr253 + chunk3
         chk8 = int_to_bitstr(checksum(tmp256))    
         
-        print(chunk3 + chk8, words_rev[chunk3 + chk8])
+        word24 = words_rev[chunk3 + chk8]
+        privatekey = mnemonic_to_privatekey.main(words23 + [word24])["privatekey_hex"]
+        info = privatekey_to_info.main(privatekey)
+        
+        print(chunk3 + chk8, word24, info["address"], info["balance"], info["wif"])
         
 if __name__ == '__main__':
     main(sys.argv[1:])
